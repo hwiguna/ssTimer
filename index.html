@@ -5,10 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Programmable Timer</title>
     <style>
-        :root {
-            --return-offset: 75px;
-        }
-
         * {
             margin: 0;
             padding: 0;
@@ -22,7 +18,7 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            padding: 20px;
+            padding: 40px 20px;
         }
 
         .container {
@@ -32,16 +28,16 @@
         }
 
         .timer-flow {
-            display: flex;
-            flex-direction: column;
-            gap: 40px;
+            position: relative;
+            padding-bottom: 100px;
         }
 
-        .top-row {
+        .boxes-row {
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 20px;
+            position: relative;
         }
 
         .timer-box {
@@ -51,13 +47,38 @@
             border: 2px solid #333;
             border-radius: 15px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px;
         }
 
+        .timer-box select {
+            width: 100%;
+            padding: 4px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 12px;
+            background-color: white;
+            cursor: pointer;
+        }
+
+        .timer-box select:focus {
+            outline: 2px solid #4CAF50;
+            border-color: #4CAF50;
+        }
+
+        /* Forward arrows between boxes */
         .arrow {
             position: relative;
             width: 50px;
             height: 2px;
             background-color: #333;
+            flex-shrink: 0;
         }
 
         .arrow::after {
@@ -72,135 +93,203 @@
             border-bottom: 5px solid transparent;
         }
 
+        /* Return path container */
         .return-path {
-            position: relative;
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-        }
-
-        .vertical-arrow {
             position: absolute;
+            top: 50px;
+            left: 0;
             right: 0;
+            height: 100px;
+        }
+
+        /* Return arrow segments */
+        .return-segment {
+            position: absolute;
+            background-color: #333;
+            pointer-events: none;
+        }
+
+        /* Segment 1: Short horizontal line going right from last box */
+        .segment-right {
+            right: -30px;
+            top: 0;
+            width: 30px;
+            height: 2px;
+        }
+
+        /* Segment 2: Vertical line going down */
+        .segment-down {
+            right: -30px;
             top: 0;
             width: 2px;
-            height: 60px;
-            background-color: #333;
-        }
-
-        .vertical-arrow::after {
-            content: '';
-            position: absolute;
-            bottom: -8px;
-            left: -4px;
-            width: 0;
-            height: 0;
-            border-top: 10px solid #333;
-            border-left: 5px solid transparent;
-            border-right: 5px solid transparent;
-        }
-
-        .horizontal-return-arrow {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: var(--return-offset);
-            height: 2px;
-            background-color: #333;
-        }
-
-        .horizontal-return-arrow::before {
-            content: '';
-            position: absolute;
-            left: -8px;
-            top: -4px;
-            width: 0;
-            height: 0;
-            border-right: 10px solid #333;
-            border-top: 5px solid transparent;
-            border-bottom: 5px solid transparent;
-        }
-
-        .return-connector {
-            position: relative;
-            width: 100%;
             height: 80px;
-            margin-top: -20px;
         }
 
-        .return-line {
-            position: absolute;
-            background-color: #333;
-        }
-
-        .vertical-down {
-            right: var(--return-offset);
-            top: 0;
-            width: 2px;
-            height: 40px;
-        }
-
-        .horizontal-back {
-            left: 0;
-            right: var(--return-offset);
-            bottom: 20px;
+        /* Segment 3: Long horizontal line going left */
+        .segment-left {
+            left: -30px;
+            right: -30px;
+            top: 78px;
             height: 2px;
         }
 
-        .horizontal-back::before {
+        /* Segment 4: Vertical line going up */
+        .segment-up {
+            left: -30px;
+            top: 0;
+            width: 2px;
+            height: 80px;
+        }
+
+        /* Segment 5: Short horizontal line going right to first box with arrowhead */
+        .segment-final {
+            left: -30px;
+            top: 0;
+            width: 30px;
+            height: 2px;
+        }
+
+        .segment-final::after {
             content: '';
             position: absolute;
-            left: -8px;
+            right: -8px;
             top: -4px;
             width: 0;
             height: 0;
-            border-right: 10px solid #333;
+            border-left: 10px solid #333;
             border-top: 5px solid transparent;
             border-bottom: 5px solid transparent;
         }
 
-        .vertical-down::after {
-            content: '';
+        /* Checkbox to toggle return arrow */
+        .return-toggle {
             position: absolute;
-            bottom: -8px;
-            left: -4px;
-            width: 0;
-            height: 0;
-            border-top: 10px solid #333;
-            border-left: 5px solid transparent;
-            border-right: 5px solid transparent;
-        }
-
-        .corner {
-            position: absolute;
-            right: var(--return-offset);
-            bottom: 20px;
-            width: 2px;
-            height: 2px;
-            background-color: #333;
+            right: 5px;
+            top: -5px;
+            z-index: 10;
+            cursor: pointer;
+            width: 18px;
+            height: 18px;
+            pointer-events: auto;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="timer-flow">
-            <div class="top-row">
-                <div class="timer-box"></div>
+            <div class="boxes-row">
+                <div class="timer-box">
+                    <select class="action-select">
+                        <option value=""></option>
+                        <option value="wait">Wait for</option>
+                        <option value="on">On for</option>
+                        <option value="off">Off for</option>
+                    </select>
+                    <select class="time-select">
+                        <option value=""></option>
+                        <option value="30:00">30:00</option>
+                        <option value="25:00">25:00</option>
+                        <option value="20:00">20:00</option>
+                        <option value="15:00">15:00</option>
+                        <option value="10:00">10:00</option>
+                        <option value="5:00">5:00</option>
+                    </select>
+                </div>
                 <div class="arrow"></div>
-                <div class="timer-box"></div>
+                <div class="timer-box">
+                    <select class="action-select">
+                        <option value=""></option>
+                        <option value="wait">Wait for</option>
+                        <option value="on">On for</option>
+                        <option value="off">Off for</option>
+                    </select>
+                    <select class="time-select">
+                        <option value=""></option>
+                        <option value="30:00">30:00</option>
+                        <option value="25:00">25:00</option>
+                        <option value="20:00">20:00</option>
+                        <option value="15:00">15:00</option>
+                        <option value="10:00">10:00</option>
+                        <option value="5:00">5:00</option>
+                    </select>
+                </div>
                 <div class="arrow"></div>
-                <div class="timer-box"></div>
+                <div class="timer-box">
+                    <select class="action-select">
+                        <option value=""></option>
+                        <option value="wait">Wait for</option>
+                        <option value="on">On for</option>
+                        <option value="off">Off for</option>
+                    </select>
+                    <select class="time-select">
+                        <option value=""></option>
+                        <option value="30:00">30:00</option>
+                        <option value="25:00">25:00</option>
+                        <option value="20:00">20:00</option>
+                        <option value="15:00">15:00</option>
+                        <option value="10:00">10:00</option>
+                        <option value="5:00">5:00</option>
+                    </select>
+                </div>
                 <div class="arrow"></div>
-                <div class="timer-box"></div>
+                <div class="timer-box">
+                    <select class="action-select">
+                        <option value=""></option>
+                        <option value="wait">Wait for</option>
+                        <option value="on">On for</option>
+                        <option value="off">Off for</option>
+                    </select>
+                    <select class="time-select">
+                        <option value=""></option>
+                        <option value="30:00">30:00</option>
+                        <option value="25:00">25:00</option>
+                        <option value="20:00">20:00</option>
+                        <option value="15:00">15:00</option>
+                        <option value="10:00">10:00</option>
+                        <option value="5:00">5:00</option>
+                    </select>
+                </div>
                 <div class="arrow"></div>
-                <div class="timer-box"></div>
+                <div class="timer-box">
+                    <select class="action-select">
+                        <option value=""></option>
+                        <option value="wait">Wait for</option>
+                        <option value="on">On for</option>
+                        <option value="off">Off for</option>
+                    </select>
+                    <select class="time-select">
+                        <option value=""></option>
+                        <option value="30:00">30:00</option>
+                        <option value="25:00">25:00</option>
+                        <option value="20:00">20:00</option>
+                        <option value="15:00">15:00</option>
+                        <option value="10:00">10:00</option>
+                        <option value="5:00">5:00</option>
+                    </select>
+                </div>
             </div>
-            <div class="return-connector">
-                <div class="return-line vertical-down"></div>
-                <div class="return-line horizontal-back"></div>
+            
+            <div class="return-path">
+                <input type="checkbox" id="return-toggle" class="return-toggle" checked>
+                <div class="return-segment segment-right"></div>
+                <div class="return-segment segment-down"></div>
+                <div class="return-segment segment-left"></div>
+                <div class="return-segment segment-up"></div>
+                <div class="return-segment segment-final"></div>
             </div>
         </div>
     </div>
+
+    <script>
+        // Toggle return arrow visibility
+        const toggleCheckbox = document.getElementById('return-toggle');
+        
+        toggleCheckbox.addEventListener('change', function() {
+            const segments = document.querySelectorAll('.return-segment');
+            segments.forEach(segment => {
+                segment.style.display = this.checked ? 'block' : 'none';
+            });
+        });
+    </script>
 </body>
 </html>
